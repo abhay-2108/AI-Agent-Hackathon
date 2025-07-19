@@ -1,0 +1,18 @@
+# API Keys
+GEMINI_API_KEY=your_gemini_api_key_here
+SLACK_WEBHOOK_URL=your_slack_webhook_url_here
+NOTION_API_KEY=your_notion_api_key_here
+NOTION_PAGE_ID=your_notion_page_id_here
+
+# GitHub API (Optional - for higher rate limits)
+GITHUB_TOKEN=your_github_token_here
+
+# Competitor URLs to track
+LINEAR_CHANGELOG=https://linear.app/changelog
+NOTION_BLOG=https://www.notion.so/blog
+INTERCOM_CHANGELOG=https://www.intercom.com/changelog
+FIGMA_CHANGELOG=https://www.figma.com/changelog
+
+# GitHub Repos to track
+GITHUB_OWNER=linear
+GITHUB_REPO=linear 

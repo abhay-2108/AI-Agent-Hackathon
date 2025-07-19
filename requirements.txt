@@ -1,0 +1,8 @@
+requests
+beautifulsoup4
+feedparser
+google-generativeai
+slack_sdk
+python-dotenv
+schedule 
+google.generativeai

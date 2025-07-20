@@ -334,8 +334,12 @@ def main():
         elif sys.argv[1] == "test":
             print("Running in test mode...")
             # Add test functionality here
+        elif sys.argv[1] == "--email" and len(sys.argv) > 2:
+            # Set EMAIL_TO for this run
+            os.environ["EMAIL_TO"] = sys.argv[2]
+            tracker.run()
         else:
-            print("Usage: python main.py [digest|test]")
+            print("Usage: python main.py [digest|test|--email you@example.com]")
     else:
         tracker.run()
 

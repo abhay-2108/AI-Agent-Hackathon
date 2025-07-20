@@ -148,6 +148,27 @@ def format_for_slack_and_notion(summary, competitor=None, update_type=None):
 
     return f"{heading}{summary}"
 
+def truncate_summary(summary, max_chars=900, max_words=180):
+    """
+    Truncate the summary to a maximum number of characters or words, ending at the last full sentence or line.
+    """
+    # Truncate by words first
+    words = summary.split()
+    if len(words) > max_words:
+        summary = ' '.join(words[:max_words])
+    # Truncate by characters, but try to end at a sentence or line break
+    if len(summary) > max_chars:
+        # Find the last period or line break before max_chars
+        cut = summary.rfind('.', 0, max_chars)
+        cut_nl = summary.rfind('\n', 0, max_chars)
+        cut = max(cut, cut_nl)
+        if cut > 0:
+            summary = summary[:cut+1]
+        else:
+            summary = summary[:max_chars]
+        summary = summary.rstrip() + '\n[Summary truncated due to length limit.]'
+    return summary
+
 def summarize_update(content, source_type="update", competitor=None):
     """
     Main summarization function with formatting for Slack/Notion.
@@ -158,8 +179,8 @@ def summarize_update(content, source_type="update", competitor=None):
         summary = simple_summarize(content, source_type)
     else:
         summary = summarize_with_gemini(content, source_type)
-    
-    return format_for_slack_and_notion(summary, competitor=competitor, update_type=source_type)
+    formatted = format_for_slack_and_notion(summary, competitor=competitor, update_type=source_type)
+    return truncate_summary(formatted)
 
 def should_skip_rate_limit_wait():
     """Check if rate limit waiting should be skipped."""

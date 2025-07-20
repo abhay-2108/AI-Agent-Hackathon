@@ -22,7 +22,7 @@ def test_imports():
         from scrapers.github import fetch_latest_github_release
         
         from db.models import init_db, save_update, get_last_update
-        from summarizer.summarize import summarize_change
+        from summarizer.summarize import summarize_update
         
         from notifier.slack import send_to_slack
         from notifier.notion import send_to_notion

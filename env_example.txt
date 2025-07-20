@@ -7,6 +7,10 @@ NOTION_PAGE_ID=your_notion_page_id_here
 # GitHub API (Optional - for higher rate limits)
 GITHUB_TOKEN=your_github_token_here
 
+# Rate Limiting Options
+DISABLE_GEMINI_API=false
+SKIP_RATE_LIMIT_WAIT=false
+
 # Competitor URLs to track
 LINEAR_CHANGELOG=https://linear.app/changelog
 NOTION_BLOG=https://www.notion.so/blog

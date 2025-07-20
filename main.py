@@ -71,11 +71,12 @@ class CompetitorTracker:
                                 summary=summary,
                                 competitor_name=competitor['name']
                             )
-                            
                             self.updates_found.append({
                                 'source': f"{competitor['name']} Changelog",
                                 'summary': summary,
-                                'content': latest_entry
+                                'content': latest_entry,
+                                'previous_content': last_entry,
+                                'source_url': competitor['changelog']
                             })
                             
                             print(f"New changelog update from {competitor['name']}")
@@ -109,11 +110,12 @@ class CompetitorTracker:
                                 summary=summary,
                                 competitor_name=competitor['name']
                             )
-                            
                             self.updates_found.append({
                                 'source': f"{competitor['name']} Blog",
                                 'summary': summary,
-                                'content': latest_post
+                                'content': latest_post,
+                                'previous_content': last_post,
+                                'source_url': competitor['blog']
                             })
                             
                             print(f"New blog post from {competitor['name']}")
@@ -144,11 +146,12 @@ class CompetitorTracker:
                                 summary=summary,
                                 competitor_name=competitor['name']
                             )
-                            
                             self.updates_found.append({
                                 'source': f"{competitor['name']} Pricing",
                                 'summary': summary,
-                                'content': pricing_info
+                                'content': pricing_info,
+                                'previous_content': last_pricing,
+                                'source_url': competitor['pricing']
                             })
                             
                             print(f"New pricing update from {competitor['name']}")
@@ -183,11 +186,12 @@ class CompetitorTracker:
                                 summary=summary,
                                 competitor_name=competitor['name']
                             )
-                            
                             self.updates_found.append({
                                 'source': f"{competitor['name']} GitHub",
                                 'summary': summary,
-                                'content': latest_release
+                                'content': latest_release,
+                                'previous_content': last_release,
+                                'source_url': f"https://github.com/{github_info['owner']}/{github_info['repo']}/releases"
                             })
                             
                             print(f"New GitHub release from {competitor['name']}")
@@ -206,18 +210,37 @@ class CompetitorTracker:
         print(f"Sending notifications for {len(self.updates_found)} updates...")
         
         # Send to Slack
+        from notifier.slack import send_to_slack
         for update in self.updates_found:
-            message = f"Competitor Update: {update['source']}: {update['summary']}"
-            send_to_slack(message)
+            # Create enhanced update data
+            update_data = {
+                'competitor_name': update['source'].split()[0],  # Extract competitor name
+                'source_type': update['source'].split()[-1].lower(),  # Extract source type
+                'summary': update['summary'],
+                'content': update['content'],
+                'previous_content': update.get('previous_content', ''),
+                'source_url': update.get('source_url', '')
+            }
+            send_to_slack(None, update_data)
         
         # Send to Notion
         notion_page_id = os.getenv("NOTION_PAGE_ID")
         if notion_page_id:
+            from notifier.notion import send_to_notion
             for update in self.updates_found:
+                update_data = {
+                    'competitor_name': update['source'].split()[0],
+                    'source_type': update['source'].split()[-1].lower(),
+                    'summary': update['summary'],
+                    'content': update['content'],
+                    'previous_content': update.get('previous_content', ''),
+                    'source_url': update.get('source_url', '')
+                }
                 send_to_notion(
                     notion_page_id,
                     f"Competitor Update: {update['source']}",
-                    update['summary']
+                    update['summary'],
+                    update_data=update_data
                 )
         
         # Send to Email
@@ -225,10 +248,19 @@ class CompetitorTracker:
         if email_recipient:
             from notifier.email import send_email
             for update in self.updates_found:
+                update_data = {
+                    'competitor_name': update['source'].split()[0],
+                    'source_type': update['source'].split()[-1].lower(),
+                    'summary': update['summary'],
+                    'content': update['content'],
+                    'previous_content': update.get('previous_content', ''),
+                    'source_url': update.get('source_url', '')
+                }
                 send_email(
                     recipient=email_recipient,
                     subject=f"Competitor Update: {update['source']}",
-                    message=update['summary']
+                    message=update['summary'],
+                    update_data=update_data
                 )
     
     def run_weekly_digest(self):
@@ -239,31 +271,33 @@ class CompetitorTracker:
         if weekly_updates:
             print(f"Found {len(weekly_updates)} updates in the last week")
             
-            # Send digest to Slack
-            digest_message = "Weekly Competitor Update Digest\n\n"
-            for i, update in enumerate(weekly_updates, 1):
-                digest_message += f"{i}. {update['competitor_name']} ({update['source_type']}): {update['summary']}\n"
+            # Convert database format to notification format
+            formatted_updates = []
+            for update in weekly_updates:
+                formatted_updates.append({
+                    'competitor_name': update['competitor_name'],
+                    'source_type': update['source_type'],
+                    'summary': update['summary'],
+                    'content': update.get('content', ''),
+                    'previous_content': update.get('previous_content', ''),
+                    'source_url': update.get('source_url', '')
+                })
             
-            send_to_slack(digest_message)
+            # Send digest to Slack
+            from notifier.slack import send_slack_digest
+            send_slack_digest(formatted_updates)
             
             # Send digest to Notion
             notion_page_id = os.getenv("NOTION_PAGE_ID")
             if notion_page_id:
-                send_to_notion(
-                    notion_page_id,
-                    f"Weekly Digest - {datetime.now().strftime('%B %d, %Y')}",
-                    digest_message
-                )
+                from notifier.notion import send_notion_digest
+                send_notion_digest(notion_page_id, formatted_updates)
             
             # Send digest to Email
             email_recipient = os.getenv("EMAIL_TO", os.getenv("EMAIL_FROM"))
             if email_recipient:
-                from notifier.email import send_email
-                send_email(
-                    recipient=email_recipient,
-                    subject=f"Weekly Competitor Digest - {datetime.now().strftime('%B %d, %Y')}",
-                    message=digest_message
-                )
+                from notifier.email import send_email_digest
+                send_email_digest(email_recipient, formatted_updates)
         else:
             print("No updates in the last week for digest")
     

@@ -5,6 +5,11 @@ import time
 import google.generativeai as genai
 from dotenv import load_dotenv
 import re
+from datetime import datetime, timedelta
+
+# Global rate limiting
+last_request_time = None
+MIN_REQUEST_INTERVAL = 30  # Minimum 30 seconds between requests for free tier (reduced from 60)
 
 # Load environment variables
 load_dotenv()
@@ -17,16 +22,31 @@ def simple_summarize(content, source_type="update"):
     Simple fallback summarization when Gemini API is unavailable.
     """
     # Extract key information without AI
-    lines = content.split('\n')
+    lines = [line.strip() for line in content.split('\n') if line.strip()]
     title = lines[0][:100] if lines else "Update"
     
     # Create a basic summary
     summary = f"**{source_type.title()} Update**\n\n"
     summary += f"**Title:** {title}\n\n"
     
-    # Add first few lines as summary
-    content_preview = content[:500] + "..." if len(content) > 500 else content
-    summary += f"**Content:**\n{content_preview}\n\n"
+    # Try to extract key points from the content
+    key_points = []
+    for line in lines[:10]:  # Look at first 10 lines
+        line = line.strip()
+        if len(line) > 20 and len(line) < 200:  # Reasonable length
+            # Look for lines that might be key points
+            if any(keyword in line.lower() for keyword in ['new', 'feature', 'update', 'improved', 'added', 'enhanced', 'launched', 'released']):
+                key_points.append(f"• {line}")
+            elif line.startswith(('•', '-', '*', '1.', '2.', '3.')):
+                key_points.append(f"• {line.lstrip('•-*1234567890. ')}")
+    
+    if key_points:
+        summary += "**Key Points:**\n"
+        summary += "\n".join(key_points[:5]) + "\n\n"  # Limit to 5 points
+    
+    # Add content preview
+    content_preview = content[:300] + "..." if len(content) > 300 else content
+    summary += f"**Content Preview:**\n{content_preview}\n\n"
     
     return summary
 
@@ -34,13 +54,23 @@ def summarize_with_gemini(content, source_type="update"):
     """
     Summarize competitor update content using Google Gemini API.
     """
+    global last_request_time
+    
     if not os.getenv("GEMINI_API_KEY"):
         print("No GEMINI_API_KEY set. Using fallback summarization.")
         return simple_summarize(content, source_type)
     
+    # Global rate limiting
+    if last_request_time:
+        time_since_last = datetime.now() - last_request_time
+        if time_since_last.total_seconds() < MIN_REQUEST_INTERVAL:
+            wait_time = MIN_REQUEST_INTERVAL - time_since_last.total_seconds()
+            print(f"Rate limiting: Waiting {wait_time:.1f} seconds before next Gemini request...")
+            time.sleep(wait_time)
+    
     try:
-        # Add rate limiting - wait between requests
-        time.sleep(2)  # Wait 2 seconds between requests
+        # Update last request time
+        last_request_time = datetime.now()
         
         model = genai.GenerativeModel('gemini-1.5-pro')
         
@@ -70,6 +100,23 @@ def summarize_with_gemini(content, source_type="update"):
         if "429" in error_msg or "quota" in error_msg.lower():
             print(f"Gemini API rate limit exceeded. Using fallback summarization.")
             print(f"Error: {error_msg}")
+            # Extract retry delay from error message if available
+            if "retry_delay" in error_msg and not should_skip_rate_limit_wait():
+                try:
+                    import re
+                    retry_match = re.search(r'retry_delay\s*{\s*seconds:\s*(\d+)', error_msg)
+                    if retry_match:
+                        retry_seconds = int(retry_match.group(1))
+                        print(f"Rate limit detected. Waiting {retry_seconds} seconds... (Press Ctrl+C to skip)")
+                        try:
+                            time.sleep(retry_seconds)
+                            print("Resume after rate limit wait.")
+                        except KeyboardInterrupt:
+                            print("Rate limit wait skipped by user.")
+                except:
+                    pass
+            elif should_skip_rate_limit_wait():
+                print("Rate limit wait skipped via SKIP_RATE_LIMIT_WAIT environment variable.")
             return simple_summarize(content, source_type)
         else:
             print(f"Error summarizing with Gemini: {e}")
@@ -105,5 +152,15 @@ def summarize_update(content, source_type="update", competitor=None):
     """
     Main summarization function with formatting for Slack/Notion.
     """
-    summary = summarize_with_gemini(content, source_type)
-    return format_for_slack_and_notion(summary, competitor=competitor, update_type=source_type) 
+    # Check if Gemini API is disabled via environment variable
+    if os.getenv("DISABLE_GEMINI_API", "false").lower() == "true":
+        print("Gemini API disabled via DISABLE_GEMINI_API environment variable. Using fallback summarization.")
+        summary = simple_summarize(content, source_type)
+    else:
+        summary = summarize_with_gemini(content, source_type)
+    
+    return format_for_slack_and_notion(summary, competitor=competitor, update_type=source_type)
+
+def should_skip_rate_limit_wait():
+    """Check if rate limit waiting should be skipped."""
+    return os.getenv("SKIP_RATE_LIMIT_WAIT", "false").lower() == "true" 

@@ -2,6 +2,7 @@
 
 import os
 import requests
+from .formatters import MessageFormatter
 
 def detect_notion_type(notion_id):
     """
@@ -38,9 +39,17 @@ def detect_notion_type(notion_id):
     except Exception:
         return None
 
-def send_to_notion(notion_id, title, summary, competitor_name=None, source_type="changelog"):
+def send_to_notion(notion_id, title, summary, competitor_name=None, source_type="changelog", update_data=None):
     """
     Send a competitor update to Notion (automatically detects page or database).
+    
+    Args:
+        notion_id: Notion page or database ID
+        title: Title for the update
+        summary: Summary text
+        competitor_name: Name of the competitor
+        source_type: Type of update (changelog, blog, pricing, etc.)
+        update_data: Dictionary containing full update information for formatting
     """
     notion_token = os.getenv("NOTION_API_KEY")
     if not notion_token:
@@ -53,17 +62,25 @@ def send_to_notion(notion_id, title, summary, competitor_name=None, source_type=
     elif not competitor_name:
         competitor_name = "Unknown"
     
+    # If update_data is provided, format the content
+    if update_data:
+        formatter = MessageFormatter()
+        formatted_content = formatter.format_notion_page(update_data)
+        title = formatter.get_platform_specific_title(update_data, 'notion')
+    else:
+        formatted_content = summary
+    
     # Detect if it's a page or database
     notion_type = detect_notion_type(notion_id)
     
     if notion_type == "database":
-        return send_to_notion_database(notion_id, title, summary, source_type, competitor_name)
+        return send_to_notion_database(notion_id, title, formatted_content, source_type, competitor_name)
     elif notion_type == "page":
-        return send_to_notion_page(notion_id, title, summary)
+        return send_to_notion_page(notion_id, title, formatted_content)
     else:
         print(f"Could not determine if {notion_id} is a page or database")
         print("Trying as page first...")
-        return send_to_notion_page(notion_id, title, summary)
+        return send_to_notion_page(notion_id, title, formatted_content)
 
 def send_to_notion_page(page_id, title, summary):
     """
@@ -217,4 +234,33 @@ def send_to_notion_database(database_id, title, summary, source_type="changelog"
         
     except Exception as e:
         print(f"Failed to send to Notion database: {e}")
-        return False 
+        return False
+
+def send_notion_digest(notion_id, updates):
+    """
+    Send a digest of multiple updates to Notion.
+    
+    Args:
+        notion_id: Notion page or database ID
+        updates: List of update dictionaries
+    """
+    notion_token = os.getenv("NOTION_API_KEY")
+    if not notion_token:
+        print("No NOTION_API_KEY set.")
+        return False
+    
+    formatter = MessageFormatter()
+    formatted_content = formatter.format_notion_digest(updates)
+    title = formatter.get_digest_title('notion')
+    
+    # Detect if it's a page or database
+    notion_type = detect_notion_type(notion_id)
+    
+    if notion_type == "database":
+        return send_to_notion_database(notion_id, title, formatted_content, "digest", "Weekly Digest")
+    elif notion_type == "page":
+        return send_to_notion_page(notion_id, title, formatted_content)
+    else:
+        print(f"Could not determine if {notion_id} is a page or database")
+        print("Trying as page first...")
+        return send_to_notion_page(notion_id, title, formatted_content) 

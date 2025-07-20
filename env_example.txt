@@ -12,10 +12,9 @@ DISABLE_GEMINI_API=false
 SKIP_RATE_LIMIT_WAIT=false
 
 # Competitor URLs to track
-LINEAR_CHANGELOG=https://linear.app/changelog
-NOTION_BLOG=https://www.notion.so/blog
-INTERCOM_CHANGELOG=https://www.intercom.com/changelog
-FIGMA_CHANGELOG=https://www.figma.com/changelog
+OPENAI_BLOG=https://openai.com/blog
+HACKERNEWS=https://news.ycombinator.com/
+REDDIT_ML=https://www.reddit.com/r/MachineLearning/
 
 # GitHub Repos to track
 GITHUB_OWNER=linear

@@ -1,6 +1,5 @@
 import streamlit as st
-import subprocess
-import sys
+from main import run_tracker
 
 st.title("Competitor Feature Tracker - Email Dashboard")
 
@@ -10,13 +9,9 @@ email = st.text_input("Email Address", "")
 
 if st.button("Send Updates"):
     if email:
-        # Call main.py with the email as an argument
         try:
-            result = subprocess.run([sys.executable, "main.py", "--email", email], capture_output=True, text=True)
-            if result.returncode == 0:
-                st.success(f"Updates sent to {email}!")
-            else:
-                st.error(f"Failed to send updates. Error: {result.stderr}")
+            run_tracker(email=email)
+            st.success(f"Updates sent to {email}!")
         except Exception as e:
             st.error(f"An error occurred: {e}")
     else:

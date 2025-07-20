@@ -323,25 +323,29 @@ class CompetitorTracker:
         
         print(f"Competitor tracking completed. Found {len(self.updates_found)} updates.")
 
+def run_tracker(email=None):
+    """Run the competitor tracker, optionally overriding the email recipient."""
+    if email:
+        os.environ["EMAIL_TO"] = email
+    tracker = CompetitorTracker()
+    tracker.run()
+
 def main():
     """Main entry point."""
-    tracker = CompetitorTracker()
-    
     # Check command line arguments
     if len(sys.argv) > 1:
         if sys.argv[1] == "digest":
+            tracker = CompetitorTracker()
             tracker.run(digest_only=True)
         elif sys.argv[1] == "test":
             print("Running in test mode...")
             # Add test functionality here
         elif sys.argv[1] == "--email" and len(sys.argv) > 2:
-            # Set EMAIL_TO for this run
-            os.environ["EMAIL_TO"] = sys.argv[2]
-            tracker.run()
+            run_tracker(email=sys.argv[2])
         else:
             print("Usage: python main.py [digest|test|--email you@example.com]")
     else:
-        tracker.run()
+        run_tracker()
 
 if __name__ == "__main__":
     main() 

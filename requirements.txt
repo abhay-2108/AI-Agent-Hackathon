@@ -8,3 +8,4 @@ schedule
 google.generativeai
 streamlit
 flask
+markdown

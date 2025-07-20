@@ -70,7 +70,7 @@ def get_weekly_updates():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""
-        SELECT source_type, source_url, summary, competitor_name, timestamp
+        SELECT source_type, source_url, summary, content, competitor_name, timestamp
         FROM competitor_updates 
         WHERE timestamp >= datetime('now', '-7 days')
         ORDER BY timestamp DESC
@@ -84,8 +84,9 @@ def get_weekly_updates():
             'source_type': row[0],
             'source_url': row[1],
             'summary': row[2],
-            'competitor_name': row[3],
-            'timestamp': row[4]
+            'content': row[3],
+            'competitor_name': row[4],
+            'timestamp': row[5]
         })
     return updates
 

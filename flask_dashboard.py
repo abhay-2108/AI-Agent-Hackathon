@@ -302,6 +302,7 @@ def tracker():
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     let lastUpdateTimestamp = null;
+    let pollStartTime = null;
     function showEmailModal() {
       var modal = new bootstrap.Modal(document.getElementById('emailModal'));
       modal.show();
@@ -312,9 +313,7 @@ def tracker():
       document.getElementById('loadingSpinner').classList.remove('d-none');
       var form = document.getElementById('runForm');
       var formData = new FormData(form);
-      // Store spinner state in sessionStorage so it persists on reload
       sessionStorage.setItem('showSpinner', 'true');
-      // Store the latest update timestamp before running
       fetch('/api/updates').then(r => r.json()).then(updates => {
         if (updates.length > 0) {
           lastUpdateTimestamp = updates[0].timestamp;
@@ -328,6 +327,7 @@ def tracker():
         .then(response => response.json())
         .then(data => {
           if (data.success) {
+            pollStartTime = Date.now();
             pollForUpdates();
           } else {
             alert('Error: ' + (data.message || 'Failed to run tracker.'));
@@ -348,6 +348,7 @@ def tracker():
       return false;
     }
     function pollForUpdates() {
+      if (!pollStartTime) pollStartTime = Date.now();
       fetch('/api/updates')
         .then(r => r.json())
         .then(updates => {
@@ -360,6 +361,11 @@ def tracker():
           if (newUpdate) {
             sessionStorage.removeItem('showSpinner');
             window.location.reload();
+          } else if (Date.now() - pollStartTime > 60000) { // 60 seconds timeout
+            sessionStorage.removeItem('showSpinner');
+            document.getElementById('loadingSpinner').classList.add('d-none');
+            document.getElementById('trackerContent').classList.remove('d-none');
+            alert('No new updates found. Please try again later.');
           } else {
             setTimeout(pollForUpdates, 5000);
           }
@@ -368,15 +374,14 @@ def tracker():
           setTimeout(pollForUpdates, 5000);
         });
     }
-    // On page load, check if spinner should be shown
     window.addEventListener('DOMContentLoaded', function() {
       if (sessionStorage.getItem('showSpinner') === 'true') {
         document.getElementById('trackerContent').classList.add('d-none');
         document.getElementById('loadingSpinner').classList.remove('d-none');
+        pollStartTime = Date.now();
         pollForUpdates();
       }
     });
-    // When updates are loaded, hide spinner
     window.addEventListener('load', function() {
       sessionStorage.removeItem('showSpinner');
     });

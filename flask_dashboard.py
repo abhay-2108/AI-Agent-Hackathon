@@ -151,74 +151,175 @@ ABOUT_TEMPLATE = '''
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        body { background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%); font-family: 'Inter', sans-serif; }
-        .hero { padding: 4rem 0 2rem 0; }
-        .feature-card { border: none; border-radius: 1.25rem; box-shadow: 0 4px 24px rgba(99,102,241,0.07); transition: transform 0.3s, box-shadow 0.3s; background: #fff; }
-        .feature-card:hover { transform: translateY(-8px) scale(1.04); box-shadow: 0 12px 36px rgba(99,102,241,0.18); }
-        .feature-icon { font-size: 2.5rem; margin-bottom: 0.5rem; transition: color 0.2s, transform 0.2s; }
-        .feature-card:hover .feature-icon { color: #2563eb; transform: scale(1.2) rotate(-8deg); }
-        .btn-main { background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%); color: #fff; border-radius: 8px; font-weight: 600; box-shadow: 0 2px 8px rgba(99,102,241,0.08); transition: background 0.2s, box-shadow 0.2s; }
-        .btn-main:hover { background: linear-gradient(90deg, #1d4ed8 0%, #6366f1 100%); box-shadow: 0 4px 16px rgba(99,102,241,0.16); }
-        .section-title { font-weight: 800; letter-spacing: -1px; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0e7ef 0%, #f8fafc 100%);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-hero {
+            background: rgba(255,255,255,0.7);
+            border-radius: 2rem;
+            box-shadow: 0 8px 32px rgba(99,102,241,0.18), 0 1.5px 8px rgba(99,102,241,0.08);
+            backdrop-filter: blur(8px);
+            padding: 3.5rem 2rem 2.5rem 2rem;
+            margin-top: 3rem;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+        .floating-icon {
+            position: absolute;
+            opacity: 0.13;
+            pointer-events: none;
+            z-index: 1;
+            animation: floatY 6s ease-in-out infinite alternate;
+        }
+        .floating-icon.icon1 {
+            top: -40px; left: 10vw; font-size: 7rem; color: #6366f1;
+            animation-delay: 0s;
+        }
+        .floating-icon.icon2 {
+            top: 60px; right: 8vw; font-size: 5.5rem; color: #2563eb;
+            animation-delay: 2s;
+        }
+        .floating-icon.icon3 {
+            bottom: 0; left: 5vw; font-size: 6rem; color: #7c3aed;
+            animation-delay: 1s;
+        }
+        @keyframes floatY {
+            from { transform: translateY(0); }
+            to { transform: translateY(40px); }
+        }
+        .feature-card {
+            border: none;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 24px rgba(99,102,241,0.07);
+            transition: transform 0.3s, box-shadow 0.3s, background 0.2s;
+            background: rgba(255,255,255,0.85);
+        }
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.05) rotate(-1deg);
+            box-shadow: 0 12px 36px rgba(99,102,241,0.18);
+            background: #f3f4f6;
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .feature-card:hover .feature-icon {
+            color: #2563eb;
+            transform: scale(1.2) rotate(-8deg);
+        }
+        .btn-main {
+            background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%);
+            color: #fff;
+            border-radius: 12px;
+            font-weight: 700;
+            box-shadow: 0 2px 12px rgba(99,102,241,0.13);
+            padding: 0.85rem 2.5rem;
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+        }
+        .btn-main:hover {
+            background: linear-gradient(90deg, #1d4ed8 0%, #6366f1 100%);
+            box-shadow: 0 6px 24px rgba(99,102,241,0.18);
+            transform: scale(1.04);
+        }
+        .section-title {
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, #6366f1 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
         .feature-title { font-weight: 600; font-size: 1.2rem; }
         .feature-desc { color: #64748b; font-size: 1rem; }
-        .github-link { color: #6366f1; text-decoration: none; font-weight: 600; }
-        .github-link:hover { text-decoration: underline; color: #2563eb; }
+        .github-link {
+            color: #fff;
+            background: linear-gradient(90deg, #6366f1 0%, #2563eb 100%);
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.13);
+            text-decoration: none;
+            transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+            display: inline-block;
+        }
+        .github-link:hover {
+            background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%);
+            color: #fff;
+            box-shadow: 0 6px 24px rgba(99,102,241,0.18);
+            text-decoration: underline;
+        }
+        .mt-hero {
+            margin-top: 2.5rem;
+        }
     </style>
     <script src="https://unpkg.com/feather-icons"></script>
 </head>
 <body>
-<div class="container hero text-center animate__animated animate__fadeInDown animate__faster">
-    <h1 class="display-4 fw-bold mb-3 section-title animate__animated animate__fadeInDown">Competitor Feature Tracker</h1>
-    <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s">AI-powered tool for Product Managers to monitor, summarize, and get notified about competitor product updates &mdash; all in one place.</p>
-    <div class="row justify-content-center g-4 mb-4">
-        <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-1s">
-                <div class="feature-icon text-primary"><i data-feather="search"></i></div>
-                <div class="feature-title">Multi-Source Monitoring</div>
-                <div class="feature-desc">Automatically tracks changelogs, blogs, pricing pages, and GitHub releases from your competitors, so you never miss an update.</div>
+    <span class="floating-icon icon1"><i data-feather="activity"></i></span>
+    <span class="floating-icon icon2"><i data-feather="zap"></i></span>
+    <span class="floating-icon icon3"><i data-feather="database"></i></span>
+    <div class="container hero text-center animate__animated animate__fadeInDown animate__faster mt-hero">
+        <div class="glass-hero">
+            <h1 class="display-4 fw-bold mb-3 section-title animate__animated animate__fadeInDown">Competitor Feature Tracker</h1>
+            <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s">AI-powered tool for Product Managers to monitor, summarize, and get notified about competitor product updates &mdash; all in one place.</p>
+            <div class="row justify-content-center g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-1s">
+                        <div class="feature-icon text-primary"><i data-feather="search"></i></div>
+                        <div class="feature-title">Multi-Source Monitoring</div>
+                        <div class="feature-desc">Automatically tracks changelogs, blogs, pricing pages, and GitHub releases from your competitors, so you never miss an update.</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-2s">
+                        <div class="feature-icon text-info"><i data-feather="cpu"></i></div>
+                        <div class="feature-title">AI Summarization</div>
+                        <div class="feature-desc">Uses Google Gemini to generate concise, insightful summaries and tags for every update, saving you hours of manual review.</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-3s">
+                        <div class="feature-icon text-success"><i data-feather="bell"></i></div>
+                        <div class="feature-title">Multi-Channel Notifications</div>
+                        <div class="feature-desc">Delivers updates to Slack, Notion, and Email with rich, platform-optimized formatting for maximum clarity and impact.</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-4s">
+                        <div class="feature-icon text-warning"><i data-feather="clock"></i></div>
+                        <div class="feature-title">Automated Scheduling</div>
+                        <div class="feature-desc">Runs on a schedule (e.g., weekly digests) or on-demand, so you always get updates at the right time without manual effort.</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-5s">
+                        <div class="feature-icon text-secondary"><i data-feather="database"></i></div>
+                        <div class="feature-title">Data Storage & Change Detection</div>
+                        <div class="feature-desc">Uses SQLite to store historical updates and smartly detects new changes, ensuring you only see what’s new and relevant.</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-6s">
+                        <div class="feature-icon text-danger"><i data-feather="layout"></i></div>
+                        <div class="feature-title">Enhanced Formatting</div>
+                        <div class="feature-desc">Messages are beautifully formatted for each platform: emojis, HTML emails, Notion markdown, and grouped digests for easy reading.</div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-2s">
-                <div class="feature-icon text-info"><i data-feather="cpu"></i></div>
-                <div class="feature-title">AI Summarization</div>
-                <div class="feature-desc">Uses Google Gemini to generate concise, insightful summaries and tags for every update, saving you hours of manual review.</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-3s">
-                <div class="feature-icon text-success"><i data-feather="bell"></i></div>
-                <div class="feature-title">Multi-Channel Notifications</div>
-                <div class="feature-desc">Delivers updates to Slack, Notion, and Email with rich, platform-optimized formatting for maximum clarity and impact.</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-4s">
-                <div class="feature-icon text-warning"><i data-feather="clock"></i></div>
-                <div class="feature-title">Automated Scheduling</div>
-                <div class="feature-desc">Runs on a schedule (e.g., weekly digests) or on-demand, so you always get updates at the right time without manual effort.</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-5s">
-                <div class="feature-icon text-secondary"><i data-feather="database"></i></div>
-                <div class="feature-title">Data Storage & Change Detection</div>
-                <div class="feature-desc">Uses SQLite to store historical updates and smartly detects new changes, ensuring you only see what’s new and relevant.</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card feature-card p-4 h-100 animate__animated animate__zoomIn animate__delay-6s">
-                <div class="feature-icon text-danger"><i data-feather="layout"></i></div>
-                <div class="feature-title">Enhanced Formatting</div>
-                <div class="feature-desc">Messages are beautifully formatted for each platform: emojis, HTML emails, Notion markdown, and grouped digests for easy reading.</div>
+            <a href="{{ url_for('tracker') }}" class="btn btn-main btn-lg mt-3 shadow animate__animated animate__pulse animate__infinite">Go to Competitor Tracker</a>
+            <div class="mt-5 animate__animated animate__fadeInUp animate__delay-2s">
+                <a href="https://github.com/abhay-2108/AI-Agent-Hackathon" class="github-link" target="_blank">🚀 Deploy-ready Flask UI — View on GitHub</a>
             </div>
         </div>
     </div>
-    <a href="{{ url_for('tracker') }}" class="btn btn-main btn-lg mt-3 shadow animate__animated animate__pulse animate__infinite">Go to Competitor Tracker</a>
-    <div class="mt-5 text-muted animate__animated animate__fadeInUp animate__delay-2s">Deploy-ready Flask UI &mdash; <a href="https://github.com/your-repo" class="github-link" target="_blank">View on GitHub</a></div>
-</div>
-<script>feather.replace()</script>
+    <script>feather.replace()</script>
 </body>
 </html>
 '''

@@ -252,6 +252,20 @@ class CompetitorTracker:
                     print("[WARN] EMAIL_TO/EMAIL_FROM not set. Skipping Email notification.")
             except Exception as e:
                 print(f"[ERROR] Failed to send Email notification: {e}")
+            # Always store the update in SQLite after notifications
+            try:
+                from db.models import save_update
+                print("[DEBUG] Storing update in SQLite DB...")
+                save_update(
+                    source_type=update_data['source_type'],
+                    source_url=update_data['source_url'],
+                    content=update_data['content'],
+                    summary=update_data['summary'],
+                    competitor_name=update_data['competitor_name']
+                )
+                print("[DEBUG] Update stored in SQLite DB.")
+            except Exception as e:
+                print(f"[ERROR] Failed to store update in SQLite DB: {e}")
     
     def run_weekly_digest(self):
         """Generate weekly digest of all updates."""

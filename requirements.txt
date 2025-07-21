@@ -9,3 +9,4 @@ google.generativeai
 streamlit
 flask
 markdown
+gunicorn

@@ -99,7 +99,20 @@ This will:
     python test_tracker.py
     ```
 
-### **Running the Tracker**
+### **Running the Flask Dashboard UI**
+
+**Start the Flask dashboard:**
+
+```bash
+python flask_dashboard.py
+```
+
+- The default page is an About page describing the project.
+- Click "Go to Competitor Tracker" to view the tracker dashboard.
+- On the Competitor Tracker page, click "Run Competitor Tracker" to trigger a new run of the tracker logic (runs `main.py`).
+- You can deploy this Flask app using any WSGI server (e.g., Gunicorn, uWSGI) for production.
+
+### **Running the Tracker (CLI)**
 
 **Manual run**:
 

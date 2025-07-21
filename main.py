@@ -31,23 +31,9 @@ class CompetitorTracker:
         """Initialize the competitor tracker."""
         self.updates_found = []
         self.competitors = {
-            'linear': {
-                'name': 'Linear',
-                'changelog': 'https://linear.app/changelog',
-                'blog': 'https://linear.app/blog',
-                'pricing': 'https://linear.app/pricing',
-                'github': {'owner': 'linear', 'repo': 'linear'}
-            },
-            'notion': {
-                'name': 'Notion',
-                'blog': 'https://www.notion.so/blog',
-                'pricing': 'https://www.notion.so/pricing'
-            },
-            'figma': {
-                'name': 'Figma',
-                'changelog': 'https://www.figma.com/changelog',
-                'blog': 'https://www.figma.com/blog',
-                'pricing': 'https://www.figma.com/pricing'
+            'techcrunch': {
+                'name': 'TechCrunch',
+                'changelog': 'https://techcrunch.com/',  # TechCrunch for regular news/updates
             }
         }
     
@@ -243,7 +229,7 @@ class CompetitorTracker:
                     update_data=update_data
                 )
         
-        # Send to Email
+        # Send to Email (match Notion formatting)
         email_recipient = os.getenv("EMAIL_TO", os.getenv("EMAIL_FROM"))
         if email_recipient:
             from notifier.email import send_email
@@ -260,7 +246,7 @@ class CompetitorTracker:
                     recipient=email_recipient,
                     subject=f"Competitor Update: {update['source']}",
                     message=update['summary'],
-                    update_data=update_data
+                    update_data=update_data  # This ensures Notion-style formatting is used
                 )
     
     def run_weekly_digest(self):

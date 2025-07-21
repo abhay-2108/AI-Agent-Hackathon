@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 # Global rate limiting
 last_request_time = None
-MIN_REQUEST_INTERVAL = 30  # Minimum 30 seconds between requests for free tier (reduced from 60)
+MIN_REQUEST_INTERVAL = 10  # Minimum 10 seconds between requests for free tier (reduced from 30)
 
 # Load environment variables
 load_dotenv()
@@ -80,9 +80,7 @@ def summarize_with_gemini(content, source_type="update"):
         - What new feature or change was announced
         - Key benefits or improvements
         - Impact on users or market
-        
-        Keep it under 200 words and use bullet points for clarity.
-        
+        Keep it under 50 words. Do not break sentences in the middle. End with a complete sentence.
         Content:
         {content}
         """
@@ -90,7 +88,18 @@ def summarize_with_gemini(content, source_type="update"):
         response = model.generate_content(prompt)
         
         if response.text:
-            return response.text
+            # Truncate to 50 words, ending at a sentence if possible
+            words = response.text.split()
+            if len(words) > 50:
+                # Find the last period before 50th word
+                joined = ' '.join(words[:60])  # allow a little extra
+                last_period = joined.rfind('.')
+                if last_period != -1 and last_period < len(joined):
+                    summary = joined[:last_period+1]
+                else:
+                    summary = ' '.join(words[:50])
+                return summary.strip()
+            return response.text.strip()
         else:
             print("Empty response from Gemini. Using fallback.")
             return simple_summarize(content, source_type)

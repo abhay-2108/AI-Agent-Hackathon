@@ -361,7 +361,7 @@ def tracker():
           if (newUpdate) {
             sessionStorage.removeItem('showSpinner');
             window.location.reload();
-          } else if (Date.now() - pollStartTime > 60000) { // 60 seconds timeout
+          } else if (Date.now() - pollStartTime > 120000) { // 2 minutes timeout
             sessionStorage.removeItem('showSpinner');
             document.getElementById('loadingSpinner').classList.add('d-none');
             document.getElementById('trackerContent').classList.remove('d-none');

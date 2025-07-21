@@ -33,7 +33,15 @@ class CompetitorTracker:
         self.competitors = {
             'techcrunch': {
                 'name': 'TechCrunch',
-                'changelog': 'https://techcrunch.com/',  # TechCrunch for regular news/updates
+                'changelog': 'https://techcrunch.com/',
+            },
+            'n8n': {
+                'name': 'n8n',
+                'pricing': 'https://n8n.io/pricing',
+            },
+            'notion': {
+                'name': 'Notion',
+                'blog': 'https://www.notion.so/blog',
             }
         }
     
@@ -192,62 +200,58 @@ class CompetitorTracker:
         if not self.updates_found:
             print("No updates to notify about")
             return
-        
         print(f"Sending notifications for {len(self.updates_found)} updates...")
-        
-        # Send to Slack
-        from notifier.slack import send_to_slack
         for update in self.updates_found:
-            # Create enhanced update data
             update_data = {
-                'competitor_name': update['source'].split()[0],  # Extract competitor name
-                'source_type': update['source'].split()[-1].lower(),  # Extract source type
+                'competitor_name': update['source'].split()[0],
+                'source_type': update['source'].split()[-1].lower(),
                 'summary': update['summary'],
                 'content': update['content'],
                 'previous_content': update.get('previous_content', ''),
                 'source_url': update.get('source_url', '')
             }
-            send_to_slack(None, update_data)
-        
-        # Send to Notion
-        notion_page_id = os.getenv("NOTION_PAGE_ID")
-        if notion_page_id:
-            from notifier.notion import send_to_notion
-            for update in self.updates_found:
-                update_data = {
-                    'competitor_name': update['source'].split()[0],
-                    'source_type': update['source'].split()[-1].lower(),
-                    'summary': update['summary'],
-                    'content': update['content'],
-                    'previous_content': update.get('previous_content', ''),
-                    'source_url': update.get('source_url', '')
-                }
-                send_to_notion(
-                    notion_page_id,
-                    f"Competitor Update: {update['source']}",
-                    update['summary'],
-                    update_data=update_data
-                )
-        
-        # Send to Email (match Notion formatting)
-        email_recipient = os.getenv("EMAIL_TO", os.getenv("EMAIL_FROM"))
-        if email_recipient:
-            from notifier.email import send_email
-            for update in self.updates_found:
-                update_data = {
-                    'competitor_name': update['source'].split()[0],
-                    'source_type': update['source'].split()[-1].lower(),
-                    'summary': update['summary'],
-                    'content': update['content'],
-                    'previous_content': update.get('previous_content', ''),
-                    'source_url': update.get('source_url', '')
-                }
-                send_email(
-                    recipient=email_recipient,
-                    subject=f"Competitor Update: {update['source']}",
-                    message=update['summary'],
-                    update_data=update_data  # This ensures Notion-style formatting is used
-                )
+            # Send to Slack
+            try:
+                from notifier.slack import send_to_slack
+                print("[DEBUG] Sending to Slack...")
+                send_to_slack(None, update_data)
+                print("[DEBUG] Slack notification sent.")
+            except Exception as e:
+                print(f"[ERROR] Failed to send Slack notification: {e}")
+            # Send to Notion
+            try:
+                notion_page_id = os.getenv("NOTION_PAGE_ID")
+                if notion_page_id:
+                    from notifier.notion import send_to_notion
+                    print("[DEBUG] Sending to Notion...")
+                    send_to_notion(
+                        notion_page_id,
+                        f"Competitor Update: {update['source']}",
+                        update['summary'],
+                        update_data=update_data
+                    )
+                    print("[DEBUG] Notion notification sent.")
+                else:
+                    print("[WARN] NOTION_PAGE_ID not set. Skipping Notion notification.")
+            except Exception as e:
+                print(f"[ERROR] Failed to send Notion notification: {e}")
+            # Send to Email
+            try:
+                email_recipient = os.getenv("EMAIL_TO", os.getenv("EMAIL_FROM"))
+                if email_recipient:
+                    from notifier.email import send_email
+                    print("[DEBUG] Sending to Email...")
+                    send_email(
+                        recipient=email_recipient,
+                        subject=f"Competitor Update: {update['source']}",
+                        message=update['summary'],
+                        update_data=update_data
+                    )
+                    print("[DEBUG] Email notification sent.")
+                else:
+                    print("[WARN] EMAIL_TO/EMAIL_FROM not set. Skipping Email notification.")
+            except Exception as e:
+                print(f"[ERROR] Failed to send Email notification: {e}")
     
     def run_weekly_digest(self):
         """Generate weekly digest of all updates."""
